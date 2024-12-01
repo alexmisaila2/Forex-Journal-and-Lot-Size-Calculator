@@ -6,6 +6,7 @@ import TradeTable from './components/TradeTable';
 import Filters from './components/Filters';
 import Pagination from './components/Pagination';
 import LotCalculator from './components/LotCalculator';
+import ExportImport from './components/ExportImport';
 import { BookOpen } from 'lucide-react';
 import { TradeDB } from './utils/db';
 
@@ -77,28 +78,40 @@ function App() {
     }
   };
 
+  const handleImport = async (importedTrades: Trade[]) => {
+    await db.init();
+    for (const trade of importedTrades) {
+      await db.addTrade(trade);
+    }
+    const savedTrades = await db.getAllTrades();
+    setTrades(savedTrades as Trade[]);
+  };
+
   return (
     <div className="min-h-screen bg-gray-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex items-center space-x-4 mb-8">
-          <BookOpen className="w-8 h-8 text-blue-600" />
-          <h1 className="text-3xl font-bold text-gray-900">Forex Trading Journal</h1>
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center space-x-4">
+            <BookOpen className="w-8 h-8 text-blue-600" />
+            <h1 className="text-3xl font-bold text-gray-900">Forex Trading Journal</h1>
+          </div>
         </div>
 
         <Stats stats={calculateStats(trades)} />
         
         <LotCalculator />
 
-        <TradeForm
-          onSubmit={handleAddTrade}
-        />
+        <div className="flex justify-between items-start mb-6">
+          <Filters
+            month={month}
+            setMonth={setMonth}
+            tradeResult={tradeResult}
+            setTradeResult={setTradeResult}
+          />
+          <ExportImport trades={trades} onImport={handleImport} />
+        </div>
 
-        <Filters
-          month={month}
-          setMonth={setMonth}
-          tradeResult={tradeResult}
-          setTradeResult={setTradeResult}
-        />
+        <TradeForm onSubmit={handleAddTrade} />
 
         <div className="bg-white rounded-lg shadow">
           <TradeTable
